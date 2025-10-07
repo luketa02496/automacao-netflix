@@ -1,7 +1,7 @@
-import pyautogui
 import time
 import os
 import threading
+import pyautogui
 from datetime import datetime
 
 def programar_desligamento(): #* funcao usada para definir o horario de desligamento do PC
@@ -84,8 +84,7 @@ def quer_reprogramar(): #* funcao deixada em segundo plano para receber a respos
     resposta = input()
 
 
-#*---------------------------------------------------------------------------- M A I N --------------------------------------------------------------------------------------------------------------------
-
+#!---------------------------------------------------------------------------- M A I N --------------------------------------------------------------------------------------------------------------------
 
 
 while True: #* loop para perguntar se desejamos programar o desligamento do pc
@@ -103,15 +102,20 @@ while True: #* loop para perguntar se desejamos programar o desligamento do pc
 t = threading.Thread(target=quer_reprogramar) #thread com o input
 t.start()
 
-#*declaracao de variaveis globais
+#* declaracao de variaveis globais
 resposta = None # variavel usada na funcao quer_reprogramar() para capturar qualquer input do usuario
 var_controle = 2 # inicia o loop
-contador = 3 # contador para o primeiro print
+contador = 12 # contador para o primeiro print
+
+#* caminho para as imagens usadas no pyautogui
+pular_intro = r"D:\dfotos\skip_intro.png"
+pular_episodio = r"D:\dfotos\next_ep.png"
+pular_recap = r"D:\dfotos\skip_recap.png"
 
 while var_controle !=1: #* loop principal
-
-    if contador == 12: # a cada 12 voltas (1 minuto) no loop print aparecera na tela
-        print('Para cancelar o desligamento, trocar a hora, programar para desligar ou encerrar o programa digite qualquer coisa.') 
+    
+    if contador == 12: # a cada 12 voltas (1 minuto) no loop o print aparecera na tela
+        print('Para cancelar o desligamento, trocar a hora, programar para desligar ou encerrar o programa digite qualquer coisa ou aperter "Enter".') 
         contador = 0
     
     if resposta or resposta == "": # verifica a resposta da thread
@@ -120,73 +124,13 @@ while var_controle !=1: #* loop principal
 
         t = threading.Thread(target=quer_reprogramar) # inicia a thread novamente
         t.start()
-        
-    try:
-        if quer_desligar == "s":
-            desligar_pc(hora_desligar)
 
-        #TODO fazer todo o codigo da automatizacao
-
-
-        contador+=1
-        time.sleep(5)
-
-    except:
-        pass
-
-print('Programa encerrado')
-        
-
-
-
-    
-
-
-
-        
-
-
-
-        
-
-
-    
-
-        
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""pular_intro = r"D:\dfotos\skip_intro.png"
-pular_episodio = r"D:\dfotos\skip_episode.png"
-pular_recap = r"D:\dfotos\skip_recap.png"
-
-hora_desligar = programar_desligamento()
-
-while True:
-    agora = datetime.now().strftime("%H:%M") #pega a hora atual e formata para hora:minutos
-
-    if agora == hora_desligar:
-        os.system("shutdown /s /f /t 0") #desliga o pc. /s para desligar, /f para forcar parada dos aplicativos e /t tempo 0 segundos (instantaneo)
+    if quer_desligar == "s":
+        desligar_pc(hora_desligar) 
 
     try:
         #pular abertura
-        botao = pyautogui.locateCenterOnScreen(pular_intro, confidence = 0.8) #localiza o botao na tela
+        botao = pyautogui.locateCenterOnScreen(pular_intro, confidence = 0.8) #localiza o botao na tela com uma confianca de 80%
         if botao:
             pyautogui.click(botao) #clica no botao
             time.sleep(1) #espera 1 segundo
@@ -197,7 +141,7 @@ while True:
     
     try:
         #pular episodio
-        botao2 = pyautogui.locateCenterOnScreen(pular_episodio, confidence = 0.6)
+        botao2 = pyautogui.locateCenterOnScreen(pular_episodio, confidence = 0.8)
         if botao2:
             pyautogui.click(botao2)
             time.sleep(1) 
@@ -208,7 +152,7 @@ while True:
         
     try:
         #pular recap
-        botao3 = pyautogui.locateCenterOnScreen(pular_recap, confidence = 0.6)
+        botao3 = pyautogui.locateCenterOnScreen(pular_recap, confidence = 0.8)
         if botao3:
             pyautogui.click(botao3)
             time.sleep(1) 
@@ -217,7 +161,45 @@ while True:
     except:
         pass
 
-    time.sleep(5)  
-"""
+    contador+=1
+    time.sleep(5)
+
+print('Programa encerrado')
+
+    
+
+
+
+    
+
+
+
+        
+
+
+
+        
+
+
+    
+
+        
+
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
