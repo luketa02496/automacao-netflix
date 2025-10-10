@@ -3,11 +3,12 @@ import os
 import threading
 import pyautogui
 from datetime import datetime
+from tkinter import Tk, filedialog
 
 def programar_desligamento(): #* funcao usada para definir o horario de desligamento do PC
     while True:   
         
-        hora = input("Informe a hora que voce deseja desligar o computador. Formato: 0000. \n-")
+        hora = input("Informe a hora que voce deseja desligar o computador no formato: 0000. Relogio no formato 24h. \n-")
 
         if not hora.isdigit(): #verifica se é um numero
             print ("Caracteres informados invalidos! \nTente novamente.")
@@ -24,7 +25,7 @@ def programar_desligamento(): #* funcao usada para definir o horario de desligam
         hora_desligar = hora[:2] + ":" + hora[2:] #adiciona : entre as horas e os minutos
         while True:
                 
-            confirma_hora=input(f"Confirmar hora de desligar? (S/N)\n {hora_desligar} \n-").lower() 
+            confirma_hora=input(f"Confirmar hora de desligar? (S/N)\n {hora_desligar}h \n-").lower() 
                 
             if confirma_hora != "s" and confirma_hora != "n": #verifica a resposta
                 print("Valor informado incorreto. Apenas (S/N).")
@@ -50,26 +51,28 @@ def desligar_pc(hora_desligar): #* funcao usada para verificar a hora do computa
 
 
 def reprogramar_desligamento(): #* funcao usada para reprogramar o desligamento do pc
-    while True:
-        global hora_desligar
-        global quer_desligar
-        global var_controle
 
+    global hora_desligar
+    global quer_desligar
+    
+    while True:
+    
         acao = input("Qual ação voce deseja realizar? \n1- Programar ou reprogramar o desligamento. \n2- Cancelar o desligamento. \n3- Para encerrar o programa \n4- Para cancelar ação. \n-") #pergunta a acao
 
         if acao != "1" and acao != "2" and acao != "3" and acao != "4": # valida a resposta
             print("Resposta invalida! Tente novamente.")
             continue
 
-        elif acao == "1": #se sim(1), programa o desligamento
+        elif acao == "1": #se (1), programa o desligamento
             hora_desligar = programar_desligamento()
             quer_desligar = "s"
         
         elif acao == "3": #encerra o programa(3)
-            var_controle = 1
             print("Encerrando o programa...")
+            exit() 
+            
 
-        elif acao == "4": #cancela a acao de repogramar o desligamento e retorna ao programa
+        elif acao == "4": #cancela a acao de repogramar o desligamento e retorna ao programa (4)
             print("Ação cancelada. Retornando ao programa...")
               
         else: #caso nao(2), desliga a programacao
@@ -78,14 +81,13 @@ def reprogramar_desligamento(): #* funcao usada para reprogramar o desligamento 
         
         break
         
-def quer_reprogramar(): #* funcao deixada em segundo plano para receber a resposta 
+def quer_reprogramar(): #* funcao deixada em segundo plano (thread) para capturar o input do usuario
 
     global resposta
     resposta = input()
 
 
 #!---------------------------------------------------------------------------- M A I N --------------------------------------------------------------------------------------------------------------------
-
 
 while True: #* loop para perguntar se desejamos programar o desligamento do pc
     quer_desligar = input("Voce deseja programar o PC para desligar? (S/N) \n-").lower() #pergunta se quer desligar o PC e formata para lower case
@@ -99,33 +101,66 @@ while True: #* loop para perguntar se desejamos programar o desligamento do pc
 
     break
 
-t = threading.Thread(target=quer_reprogramar) #thread com o input
-t.start()
+root = Tk()
+root.withdraw() 
+
+#* bloco de codigo que pede o caminho das imagens e escreve em um arquivo de texto para usar depois
+if os.path.exists('caminho_imagens.txt'): # verifica se o arquivo com o caminho das imagens existe
+    
+    with open('caminho_imagens.txt', "r", encoding= "utf-8") as arquivo: #le o arquivo de texto
+        linhas = arquivo.readlines() #coloca a conteudo dentro da variavel
+
+    pular_intro = linhas[0].strip() #coloca o conteudo dentro de variaveis separadas e remove o \n
+    pular_ep = linhas[1].strip() 
+    pular_recap = linhas[2].strip()
+
+else:
+    #TODO fazer a verificacao se foi selecionado alguma imagem
+    imagens = []
+    
+    print("Selecione a imagem do botão 'pular intro'")
+    pular_intro = filedialog.askopenfilename(title= "Selecione a imagem do botão 'pular intro'") # pede o caminho para a imagem
+    imagens.append(pular_intro) #salva na lista
+
+    print("Selecione a imagem do botão 'pular episodio'")
+    pular_ep = filedialog.askopenfilename(title= "Selecione a imagem do botão 'pular episodio'")
+    imagens.append(pular_ep)
+
+    print("Selecione a imagem do botão 'pular recaptulação'")
+    pular_recap = filedialog.askopenfilename(title= "Selecione a imagem do botão 'pular recaptulação'")
+    imagens.append(pular_recap)
+
+    with open('caminho_imagens.txt', "w", encoding = "utf-8") as arquivo: # cria o arquivo e coloca o caminho la dentro
+        for imagem in imagens:
+            print(imagem, file=arquivo)
+    
+    print("Arquivo de texto contendo o caminho para as imagens criado na mesma pasta do programa!\nNAO O CONTEUDO DESSE ARQUIVO")
+
 
 #* declaracao de variaveis globais
 resposta = None # variavel usada na funcao quer_reprogramar() para capturar qualquer input do usuario
-var_controle = 2 # inicia o loop
 contador = 12 # contador para o primeiro print
 
-#* caminho para as imagens usadas no pyautogui
-pular_intro = r"D:\dfotos\skip_intro.png"
-pular_episodio = r"D:\dfotos\next_ep.png"
-pular_recap = r"D:\dfotos\skip_recap.png"
+preparado = input('Abra a Netflix e pressione "Enter" quando estiver pronto!\n') #input que espera a confirmacao do usuario para iniciar o programa
+print("Iniciando programa...")
 
-while var_controle !=1: #* loop principal
+t = threading.Thread(target=quer_reprogramar) #thread com funcao quer_reprogramar() para capturar o input do usuario e entrar na funcao reprogramar_desligamento()
+t.start()
+
+while True: #* loop principal
     
-    if contador == 12: # a cada 12 voltas (1 minuto) no loop o print aparecera na tela
-        print('Para cancelar o desligamento, trocar a hora, programar para desligar ou encerrar o programa digite qualquer coisa ou aperter "Enter".') 
+    if contador == 24: # a cada 24 voltas (2 minuto) no loop o print aparecera na tela
+        print('Para cancelar o desligamento, trocar a hora do desligamento, programar para desligar ou encerrar o programa digite qualquer coisa ou aperter "Enter".') 
         contador = 0
     
     if resposta or resposta == "": # verifica a resposta da thread
         reprogramar_desligamento()
-        resposta = None # reinicia a variavel para nulo
+        resposta = None # reinicia a variavel para nulo       
 
         t = threading.Thread(target=quer_reprogramar) # inicia a thread novamente
         t.start()
 
-    if quer_desligar == "s":
+    if quer_desligar == "s": 
         desligar_pc(hora_desligar) 
 
     try:
@@ -141,7 +176,7 @@ while var_controle !=1: #* loop principal
     
     try:
         #pular episodio
-        botao2 = pyautogui.locateCenterOnScreen(pular_episodio, confidence = 0.8)
+        botao2 = pyautogui.locateCenterOnScreen(pular_ep, confidence = 0.65)
         if botao2:
             pyautogui.click(botao2)
             time.sleep(1) 
@@ -152,7 +187,7 @@ while var_controle !=1: #* loop principal
         
     try:
         #pular recap
-        botao3 = pyautogui.locateCenterOnScreen(pular_recap, confidence = 0.8)
+        botao3 = pyautogui.locateCenterOnScreen(pular_recap, confidence = 0.65)
         if botao3:
             pyautogui.click(botao3)
             time.sleep(1) 
@@ -164,42 +199,4 @@ while var_controle !=1: #* loop principal
     contador+=1
     time.sleep(5)
 
-print('Programa encerrado')
-
-    
-
-
-
-    
-
-
-
-        
-
-
-
-        
-
-
-    
-
-        
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#! MARCELLA EU TE AMOOOOOOOOOOOOOO MUITOOOOOOOOOOOOOOOOOOOOOOO<3

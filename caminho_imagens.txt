@@ -1,0 +1,3 @@
+C:/Users/abdut/OneDrive/Desktop/automatizador/skip_intro.png
+C:/Users/abdut/OneDrive/Desktop/automatizador/next_ep.png
+C:/Users/abdut/OneDrive/Desktop/automatizador/skip_recap.png
