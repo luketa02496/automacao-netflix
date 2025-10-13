@@ -2,8 +2,9 @@ import time
 import os
 import threading
 import pyautogui
+import sys
+from pathlib import Path
 from datetime import datetime
-from tkinter import Tk, filedialog
 
 def programar_desligamento(): #* funcao usada para definir o horario de desligamento do PC
     while True:   
@@ -47,7 +48,7 @@ def desligar_pc(hora_desligar): #* funcao usada para verificar a hora do computa
     agora = datetime.now().strftime("%H:%M") #pega a hora atual e formata para hora:minutos
 
     if agora == hora_desligar:
-        os.system("shutdown /s /f /t 0") # desliga o pc. /s para desligar, /f para forcar parada dos aplicativos e /t tempo de 0 segundos (instantaneo)
+        os.system("shutdown /s /f /t 5") # desliga o pc. /s para desligar, /f para forcar parada dos aplicativos e /t tempo de 5 segundos 
 
 
 def reprogramar_desligamento(): #* funcao usada para reprogramar o desligamento do pc
@@ -86,6 +87,32 @@ def quer_reprogramar(): #* funcao deixada em segundo plano (thread) para captura
     global resposta
     resposta = input()
 
+def obter_caminhos_imagens(): #* funcao usada para encontrar o caminho das imagens automaticamente sem que o usuario precise mexer
+    
+    if getattr(sys, 'frozen', False): #* verifica se o programa esta rodando em um .exe ou .py. o atributo sys.frozen so existe se o programa for empacotado (.exe). o if esta testando o resultado retornado por getattr(). entao se o atributo frozen existir (true). quer dizer que o script esta sendo executado por um .exe   
+        base_dir = Path(sys._MEIPASS)  #se 'frozen' == true (.exe). coloca na variavel 'base_dir' o caminho temporario criado pelo arquivo .exe                        
+                                                                                                                                    
+    else:
+        base_dir = Path(__file__).resolve().parent  #se 'frozen' == false (.py). coloca na variavel o caminho do arquivo .py. Path(__file__) cria um Path para esse arquivo .py. .resolve() transforma em caminho absoluto e resolve links simbólicos. .parent retorna a pasta que contém o arquivo.
+
+    pasta_imagens = base_dir / "imagens" #pega o caminho que esta o arquivo e soma com / para encontrar a pasta 'imagens'
+
+    # define os caminhos dentro da pasta 'imagens'
+    pular_intro = pasta_imagens / "skip_intro.png" 
+    pular_ep = pasta_imagens / "next_ep.png"
+    pular_recap = pasta_imagens / "skip_recap.png"
+
+    # verifica se as imagens existem
+    for img in [pular_intro, pular_ep, pular_recap]:
+        if not img.exists():
+            print(f"ERRO: uma ou mais imagens nao foram encontradas na pasta 'imagens'.")
+            print("Certifique-se de que a pasta 'imagens' está junto do executável ou se todas as imagens se encontram dentro da pasta 'imagens'.")
+            print("Encerrando o programa...")
+            input("Precione qualquer tecla para sair")
+            sys.exit()
+
+    return str(pular_intro), str(pular_ep), str(pular_recap) #retorna uma tupla de strings contendo o caminho para cada imagem e converte 'Path' para 'str'
+
 
 #!---------------------------------------------------------------------------- M A I N --------------------------------------------------------------------------------------------------------------------
 
@@ -101,40 +128,8 @@ while True: #* loop para perguntar se desejamos programar o desligamento do pc
 
     break
 
-root = Tk()
-root.withdraw() 
 
-#* bloco de codigo que pede o caminho das imagens e escreve em um arquivo de texto para usar depois
-if os.path.exists('caminho_imagens.txt'): # verifica se o arquivo com o caminho das imagens existe
-    
-    with open('caminho_imagens.txt', "r", encoding= "utf-8") as arquivo: #le o arquivo de texto
-        linhas = arquivo.readlines() #coloca a conteudo dentro da variavel
-
-    pular_intro = linhas[0].strip() #coloca o conteudo dentro de variaveis separadas e remove o \n
-    pular_ep = linhas[1].strip() 
-    pular_recap = linhas[2].strip()
-
-else:
-    #TODO fazer a verificacao se foi selecionado alguma imagem
-    imagens = []
-    
-    print("Selecione a imagem do botão 'pular intro'")
-    pular_intro = filedialog.askopenfilename(title= "Selecione a imagem do botão 'pular intro'") # pede o caminho para a imagem
-    imagens.append(pular_intro) #salva na lista
-
-    print("Selecione a imagem do botão 'pular episodio'")
-    pular_ep = filedialog.askopenfilename(title= "Selecione a imagem do botão 'pular episodio'")
-    imagens.append(pular_ep)
-
-    print("Selecione a imagem do botão 'pular recaptulação'")
-    pular_recap = filedialog.askopenfilename(title= "Selecione a imagem do botão 'pular recaptulação'")
-    imagens.append(pular_recap)
-
-    with open('caminho_imagens.txt', "w", encoding = "utf-8") as arquivo: # cria o arquivo e coloca o caminho la dentro
-        for imagem in imagens:
-            print(imagem, file=arquivo)
-    
-    print("Arquivo de texto contendo o caminho para as imagens criado na mesma pasta do programa!\nNAO O CONTEUDO DESSE ARQUIVO")
+pular_intro, pular_ep, pular_recap = obter_caminhos_imagens() 
 
 
 #* declaracao de variaveis globais
@@ -149,7 +144,7 @@ t.start()
 
 while True: #* loop principal
     
-    if contador == 24: # a cada 24 voltas (2 minuto) no loop o print aparecera na tela
+    if contador == 60: # a cada 60 voltas (5 minuto) no loop o print aparecera na tela
         print('Para cancelar o desligamento, trocar a hora do desligamento, programar para desligar ou encerrar o programa digite qualquer coisa ou aperter "Enter".') 
         contador = 0
     
@@ -164,7 +159,7 @@ while True: #* loop principal
         desligar_pc(hora_desligar) 
 
     try:
-        #pular abertura
+        #* pular abertura
         botao = pyautogui.locateCenterOnScreen(pular_intro, confidence = 0.8) #localiza o botao na tela com uma confianca de 80%
         if botao:
             pyautogui.click(botao) #clica no botao
@@ -175,7 +170,7 @@ while True: #* loop principal
         pass
     
     try:
-        #pular episodio
+        #* pular episodio
         botao2 = pyautogui.locateCenterOnScreen(pular_ep, confidence = 0.65)
         if botao2:
             pyautogui.click(botao2)
@@ -186,7 +181,7 @@ while True: #* loop principal
         pass
         
     try:
-        #pular recap
+        #* pular recap
         botao3 = pyautogui.locateCenterOnScreen(pular_recap, confidence = 0.65)
         if botao3:
             pyautogui.click(botao3)
@@ -200,3 +195,5 @@ while True: #* loop principal
     time.sleep(5)
 
 #! MARCELLA EU TE AMOOOOOOOOOOOOOO MUITOOOOOOOOOOOOOOOOOOOOOOO<3
+
+#TODO fazer um historico com todas as vezes que alguma açao foi feita
