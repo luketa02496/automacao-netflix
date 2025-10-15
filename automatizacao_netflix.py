@@ -51,34 +51,39 @@ def desligar_pc(hora_desligar): #* funcao usada para verificar a hora do computa
         os.system("shutdown /s /f /t 5") # desliga o pc. /s para desligar, /f para forcar parada dos aplicativos e /t tempo de 5 segundos 
 
 
-def reprogramar_desligamento(): #* funcao usada para reprogramar o desligamento do pc
+def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
 
     global hora_desligar
     global quer_desligar
-    
+    global pular_intro, pular_ep, pular_recap
+
     while True:
-    
-        acao = input("Qual ação voce deseja realizar? \n1- Programar ou reprogramar o desligamento. \n2- Cancelar o desligamento. \n3- Para encerrar o programa \n4- Para cancelar ação. \n-") #pergunta a acao
+        acao = input("Qual ação voce deseja realizar? \n1- Programar ou reprogramar o desligamento. \n2- Cancelar o desligamento. \n3- Para trocar o idioma \n4- Para encerrar o programa \n5- Para cancelar ação. \n-") #pergunta a acao
 
-        if acao != "1" and acao != "2" and acao != "3" and acao != "4": # valida a resposta
-            print("Resposta invalida! Tente novamente.")
-            continue
-
-        elif acao == "1": #se (1), programa o desligamento
-            hora_desligar = programar_desligamento()
-            quer_desligar = "s"
-        
-        elif acao == "3": #encerra o programa(3)
-            print("Encerrando o programa...")
-            exit() 
+        match acao:
+            case "1": #(1)programar ou reprogramar o desligamente
+                hora_desligar = programar_desligamento()
+                quer_desligar = "s"
             
+            case "2": #(2) cancelar o desligamento
+                quer_desligar = "n"
+                print("Desligamento do computador cancelado! \nRetornando ao programa...")
+            
+            case "3": #(3) trocar o idioma
+                idioma = idioma_usuario()
+                pular_intro, pular_ep, pular_recap = obter_caminhos_imagens(idioma)
+                print("Retornando ao programa...")
+            
+            case "4": #(4) encerrar o programa
+                print("Encerrando o programa...")
+                sys.exit()
 
-        elif acao == "4": #cancela a acao de repogramar o desligamento e retorna ao programa (4)
-            print("Ação cancelada. Retornando ao programa...")
-              
-        else: #caso nao(2), desliga a programacao
-            quer_desligar = "n"
-            print("Desligamento do computador cancelado! \nRetornando ao programa...")
+            case "5": #(5) cancelar a acao
+                print("Ação cancelada. Retornando ao programa...")
+            
+            case _:
+                print("Resposta invalida! Tente novamente.")
+                continue
         
         break
         
@@ -87,7 +92,7 @@ def quer_reprogramar(): #* funcao deixada em segundo plano (thread) para captura
     global resposta
     resposta = input()
 
-def obter_caminhos_imagens(idioma): #* funcao usada para encontrar o caminho das imagens automaticamente sem que o usuario precise mexer
+def obter_caminhos_imagens(idioma): #* funcao usada para encontrar o caminho das imagens automaticamente com base no idioma
     
     if getattr(sys, 'frozen', False): #* verifica se o programa esta rodando em um .exe ou .py. o atributo sys.frozen so existe se o programa for empacotado (.exe). o if esta testando o resultado retornado por getattr(). entao se o atributo frozen existir (true) quer dizer que o script esta sendo executado por um .exe   
         base_dir = Path(sys._MEIPASS)  #se 'frozen' == true (.exe). coloca na variavel 'base_dir' o caminho temporario criado pelo arquivo .exe                        
@@ -95,8 +100,8 @@ def obter_caminhos_imagens(idioma): #* funcao usada para encontrar o caminho das
     else:
         base_dir = Path(__file__).resolve().parent  #* se 'frozen' == false (.py). coloca na variavel o caminho do arquivo .py. Path(__file__) cria um Path para esse arquivo .py. .resolve() transforma em caminho absoluto e resolve links simbólicos. .parent retorna a pasta que contém o arquivo.
 
-    pasta_imagens = base_dir / "imagens" #pega o caminho que esta o arquivo e soma com / para encontrar a pasta 'imagens'
 
+    pasta_imagens = base_dir / "imagens" #pega o caminho que esta o arquivo e soma com / para encontrar a pasta 'imagens'
 
     # define os caminhos dentro da pasta 'imagens'
     if idioma == "1": #portugues
@@ -165,17 +170,7 @@ else: # se o arquivo ja existir
     else: #ingles
         idioma_formatado = "Ingles" 
             
-    while True: #loop para confirmar o idioma salvo
-        idioma_correto= input(f'O idioma salvo é: {idioma_formatado}. Deseja continuar(1) ou trocar de idioma(2)? \n-')
-
-        if idioma_correto != "1" and idioma_correto != "2":
-            print("Valor informado invalido! Apenas 1 ou 2. Tente novamente")
-            continue
-
-        break
-
-    if idioma_correto == "2": #se deseja trocar de idioma
-        idioma_usuario()
+    print(f"Idioma salvo: {idioma_formatado}")
 
 
 pular_intro, pular_ep, pular_recap = obter_caminhos_imagens(idioma) #configura o caminho para as imagens
@@ -194,51 +189,39 @@ t.start()
 while True: #* loop principal
     
     if contador == 60: # a cada 60 voltas (5 minutos) no loop o print aparecera na tela
-        print('Para cancelar o desligamento, alterar a hora do desligamento, programar para desligar, encerrar ou pausar o programa digite qualquer coisa ou pressione "Enter".') 
+        print('Para acessar o menu de configuracoes pressione "Enter".') 
         contador = 0
     
     if resposta or resposta == "": # verifica a resposta da thread
-        reprogramar_desligamento()
+        menu_configuracoes()
         resposta = None # reinicia a variavel para nulo       
+        print('Para acessar o menu de configuracoes pressione "Enter".')
 
         t = threading.Thread(target=quer_reprogramar) # inicia a thread novamente
         t.start()
 
     if quer_desligar == "s": 
-        desligar_pc(hora_desligar) 
+        desligar_pc(hora_desligar)
 
-    try:
-        #* pular abertura
-        botao = pyautogui.locateCenterOnScreen(pular_intro, confidence = 0.8) #localiza o botao na tela com uma confianca de 80%
-        if botao:
-            pyautogui.click(botao) #clica no botao
-            time.sleep(1) #espera 1 segundo
-            print("pulei abertura")
+    acoes = [ # dicionario usado no for
+    ( pular_intro, 0.8, "pulei abertura"),
+    ( pular_ep, 0.65, "pulei episódio"),
+    ( pular_recap, 0.65, "pulei recap")
+    ]
 
-    except:
-        pass
-    
-    try:
-        #* pular episodio
-        botao2 = pyautogui.locateCenterOnScreen(pular_ep, confidence = 0.65)
-        if botao2:
-            pyautogui.click(botao2)
-            time.sleep(1) 
-            print("pulei episodio")
+    for imagem, confianca, mensagem in acoes: #* loop para clicar nos botoes
+        try:
+            botao = pyautogui.locateCenterOnScreen(imagem, confidence = confianca) 
 
-    except:
-        pass
+            if botao:
+                pyautogui.click(botao) #clica no botao
+                time.sleep(1) #espera 1 segundo
+
+                pyautogui.moveTo(960, 540) #move o mouse para o centro da tela para tirar ele de cima de qualquer botao
+                print(mensagem)
         
-    try:
-        #* pular recap
-        botao3 = pyautogui.locateCenterOnScreen(pular_recap, confidence = 0.65)
-        if botao3:
-            pyautogui.click(botao3)
-            time.sleep(1) 
-            print("pulei recap")
-        
-    except:
-        pass
+        except:
+            pass
 
     contador+=1
     time.sleep(5)
