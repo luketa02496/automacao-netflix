@@ -120,7 +120,7 @@ def obter_caminhos_imagens(idioma): #* funcao usada para encontrar o caminho das
 
     return str(pular_intro), str(pular_ep), str(pular_recap) #retorna uma tupla de strings contendo o caminho para cada imagem e converte 'Path' para 'str'
 
-def idioma_usuario():#* funcao responsavel por perguntar ao usuario o idioma de sua netflix e salva em um arquivo txt
+def idioma_usuario(): #* funcao responsavel por perguntar ao usuario o idioma de sua netflix e salva em um arquivo txt
 
     while True: 
         idioma = input("Qual o idioma da sua Netflix? \n1- Portugues \n2- Ingles \n-")
@@ -135,6 +135,7 @@ def idioma_usuario():#* funcao responsavel por perguntar ao usuario o idioma de 
         print(idioma, file=arquivo)
     
     print("Idioma salvo com sucesso!")
+    return idioma
 
 #!---------------------------------------------------------------------------- M A I N --------------------------------------------------------------------------------------------------------------------
 
@@ -152,29 +153,29 @@ while True: #* loop para perguntar se desejamos programar o desligamento do pc
 
 
 if not os.path.exists('idioma.txt'): #* verifica se o arquivo ja existe
-    idioma_usuario()
+    idioma = idioma_usuario()
 
 else: # se o arquivo ja existir
     with open('idioma.txt', "r", encoding="utf-8") as arquivo: #le o arquivo
         idioma = arquivo.read().strip()
     
-if idioma == "1": #portugues
-    idioma_formatado = "Portugues"
+    if idioma == "1": #portugues
+        idioma_formatado = "Portugues"
 
-else: #ingles
-    idioma_formatado = "Ingles" 
-        
-while True: #loop para confirmar o idioma salvo
-    idioma_correto= input(f'O idioma salvo é: {idioma_formatado}. Deseja continuar(1) ou trocar de idioma(2)? \n-')
+    else: #ingles
+        idioma_formatado = "Ingles" 
+            
+    while True: #loop para confirmar o idioma salvo
+        idioma_correto= input(f'O idioma salvo é: {idioma_formatado}. Deseja continuar(1) ou trocar de idioma(2)? \n-')
 
-    if idioma_correto != "1" and idioma_correto != "2":
-        print("Valor informado invalido! Apenas 1 ou 2. Tente novamente")
-        continue
+        if idioma_correto != "1" and idioma_correto != "2":
+            print("Valor informado invalido! Apenas 1 ou 2. Tente novamente")
+            continue
 
-    break
+        break
 
-if idioma_correto == "2": #se deseja trocar de idioma
-    idioma_usuario()
+    if idioma_correto == "2": #se deseja trocar de idioma
+        idioma_usuario()
 
 
 pular_intro, pular_ep, pular_recap = obter_caminhos_imagens(idioma) #configura o caminho para as imagens
