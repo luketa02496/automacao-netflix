@@ -48,15 +48,16 @@ def desligar_pc(hora_desligar): #* funcao usada para verificar a hora do computa
     agora = datetime.now().strftime("%H:%M") #pega a hora atual e formata para hora:minutos
 
     if agora == hora_desligar:
-        os.system("shutdown /s /f /t 5") # desliga o pc. /s para desligar, /f para forcar parada dos aplicativos e /t tempo de 5 segundos 
+        os.system("shutdown /s /f /t 3") # desliga o pc. /s para desligar, /f para forcar parada dos aplicativos e /t tempo de 5 segundos 
 
 
-def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
+def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script e inicializada em uma thread
 
     global hora_desligar
     global quer_desligar
     global pular_intro, pular_ep, pular_recap
-
+    
+    input()
     while True:
         acao = input("Qual ação voce deseja realizar? \n1- Programar ou reprogramar o desligamento. \n2- Cancelar o desligamento. \n3- Para trocar o idioma \n4- Para encerrar o programa \n5- Para cancelar ação. \n-") #pergunta a acao
 
@@ -86,11 +87,10 @@ def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
                 continue
         
         break
-        
-def quer_reprogramar(): #* funcao deixada em segundo plano (thread) para capturar o input do usuario
 
-    global resposta
-    resposta = input()
+    t = threading.Thread(target=menu_configuracoes) # inicia a thread novamente
+    t.start()
+    print('Para acessar o menu de configuracoes pressione "Enter".')
 
 def obter_caminhos_imagens(idioma): #* funcao usada para encontrar o caminho das imagens automaticamente com base no idioma
     
@@ -157,7 +157,7 @@ while True: #* loop para perguntar se desejamos programar o desligamento do pc
     break
 
 
-if not os.path.exists('idioma.txt'): #* verifica se o arquivo ja existe
+if not os.path.exists('idioma.txt'): #* verifica se o arquivo idioma.txt ja existe
     idioma = idioma_usuario()
 
 else: # se o arquivo ja existir
@@ -173,40 +173,42 @@ else: # se o arquivo ja existir
     print(f"Idioma salvo: {idioma_formatado}")
 
 
+if not os.path.exists('historico.txt'): #* verifica se o arquivo historico.txt ja existe
+    with open ('historico.txt', "w", encoding="utf-8") as arquivo:
+        print(f'----------- HISTORICO DE ACOES DO PROGRAMA -----------\n', file=arquivo)
+        print(f'\n----------- {datetime.now().strftime("%d/%m/%y")} -----------\n', file=arquivo)
+
+else: #*caso ja exista
+    with open ('historico.txt', 'a', encoding='utf-8') as arquivo:
+        print(f'\n----------- {datetime.now().strftime("%d/%m/%y")} -----------\n', file=arquivo) #registra o dia
+
+
 pular_intro, pular_ep, pular_recap = obter_caminhos_imagens(idioma) #configura o caminho para as imagens
 
 
 #* declaracao de variaveis globais
-resposta = None # variavel usada na funcao quer_reprogramar() para capturar qualquer input do usuario
-contador = 60 # contador para o primeiro print
+contador = 120 # contador para o primeiro print
 
 input('Abra a Netflix e pressione "Enter" quando estiver pronto!\n') #input que espera a confirmacao do usuario para iniciar o programa
 print("Iniciando programa...")
 
-t = threading.Thread(target=quer_reprogramar) #thread com funcao quer_reprogramar() para capturar o input do usuario e entrar na funcao reprogramar_desligamento()
+t = threading.Thread(target=menu_configuracoes) #thread com funcao menu_configuracoes()
 t.start()
 
 while True: #* loop principal
     
-    if contador == 60: # a cada 60 voltas (5 minutos) no loop o print aparecera na tela
-        print('Para acessar o menu de configuracoes pressione "Enter".') 
-        contador = 0
-    
-    if resposta or resposta == "": # verifica a resposta da thread
-        menu_configuracoes()
-        resposta = None # reinicia a variavel para nulo       
+    if contador == 120: # a cada 120 voltas (10 minutos) no loop o print aparecera na tela
         print('Para acessar o menu de configuracoes pressione "Enter".')
-
-        t = threading.Thread(target=quer_reprogramar) # inicia a thread novamente
-        t.start()
+        print('Para verificar o historico de todas as acoes do programa acesse a pasta onde esta o arquivo .exe e procure pelo arquivo "historico.txt"')
+        contador = 0
 
     if quer_desligar == "s": 
         desligar_pc(hora_desligar)
 
-    acoes = [ # dicionario usado no for
-    ( pular_intro, 0.8, "pulei abertura"),
-    ( pular_ep, 0.65, "pulei episódio"),
-    ( pular_recap, 0.65, "pulei recap")
+    acoes = [ # lista de tuplas usada no for
+    ( pular_intro, 0.8, "abertura pulada"),
+    ( pular_ep, 0.65, "episodio pulado"),
+    ( pular_recap, 0.65, "recap pulada")
     ]
 
     for imagem, confianca, mensagem in acoes: #* loop para clicar nos botoes
@@ -215,11 +217,14 @@ while True: #* loop principal
 
             if botao:
                 pyautogui.click(botao) #clica no botao
-                time.sleep(1) #espera 1 segundo
+                time.sleep(1) #espera 1 segundo para evitar clicks duplos
 
                 pyautogui.moveTo(960, 540) #move o mouse para o centro da tela para tirar ele de cima de qualquer botao
                 print(mensagem)
-        
+
+                with open ('historico.txt', 'a', encoding='utf-8') as arquivo: #registra no arquivo a acao que foi feita juntamente com o horario
+                    print(f'{datetime.now().strftime("%H:%M:%S")} - {mensagem}\n', file=arquivo)
+                    
         except:
             pass
 
@@ -227,5 +232,3 @@ while True: #* loop principal
     time.sleep(5)
 
 #! MARCELLA EU TE AMOOOOOOOOOOOOOO MUITOOOOOOOOOOOOOOOOOOOOOOO<3
-
-#TODO fazer um historico com todas as vezes que alguma açao foi feita 
