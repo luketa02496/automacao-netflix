@@ -55,6 +55,7 @@ def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
 
     global hora_desligar
     global quer_desligar
+    global var_controle
     global pular_intro, pular_ep, pular_recap
     
     input()
@@ -76,8 +77,7 @@ def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
                 print("Retornando ao programa...")
             
             case "4": #(4) encerrar o programa
-                print("Encerrando o programa...")
-                sys.exit()
+                var_controle = 0
 
             case "5": #(5) cancelar a acao
                 print("Ação cancelada. Retornando ao programa...")
@@ -88,9 +88,10 @@ def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
         
         break
 
-    t = threading.Thread(target=menu_configuracoes) # inicia a thread novamente
-    t.start()
-    print('Para acessar o menu de configuracoes pressione "Enter".')
+    if var_controle == 1:
+        t = threading.Thread(target=menu_configuracoes) # inicia a thread novamente
+        t.start()
+        print('Para acessar o menu de configuracoes pressione "Enter".')
 
 def obter_caminhos_imagens(idioma): #* funcao usada para encontrar o caminho das imagens automaticamente com base no idioma
     
@@ -179,7 +180,7 @@ if not os.path.exists('historico.txt'): #* verifica se o arquivo historico.txt j
         print(f'\n----------- {datetime.now().strftime("%d/%m/%y")} -----------\n', file=arquivo)
 
 else: #*caso ja exista
-    with open ('historico.txt', 'a', encoding='utf-8') as arquivo:
+    with open ('historico.txt', "a", encoding='utf-8') as arquivo:
         print(f'\n----------- {datetime.now().strftime("%d/%m/%y")} -----------\n', file=arquivo) #registra o dia
 
 
@@ -188,14 +189,15 @@ pular_intro, pular_ep, pular_recap = obter_caminhos_imagens(idioma) #configura o
 
 #* declaracao de variaveis globais
 contador = 120 # contador para o primeiro print
+var_controle = 1# variavel responsavel pelo loop principal
 
-input('Abra a Netflix e pressione "Enter" quando estiver pronto!\n') #input que espera a confirmacao do usuario para iniciar o programa
+input('Abra a Netflix e pressione "Enter" quando estiver pronto!') #input que espera a confirmacao do usuario para iniciar o programa
 print("Iniciando programa...")
 
 t = threading.Thread(target=menu_configuracoes) #thread com funcao menu_configuracoes()
 t.start()
 
-while True: #* loop principal
+while var_controle != 0: #* loop principal
     
     if contador == 120: # a cada 120 voltas (10 minutos) no loop o print aparecera na tela
         print('Para acessar o menu de configuracoes pressione "Enter".')
@@ -230,5 +232,9 @@ while True: #* loop principal
 
     contador+=1
     time.sleep(5)
+    
+print("Programa encerrado!")
 
 #! MARCELLA EU TE AMOOOOOOOOOOOOOO MUITOOOOOOOOOOOOOOOOOOOOOOO<3
+
+
