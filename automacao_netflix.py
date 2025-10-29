@@ -44,10 +44,11 @@ def programar_desligamento(): #* funcao usada para definir o horario de desligam
 
 
 def desligar_pc(hora_desligar): #* funcao usada para verificar a hora do computador e desligar na hora programada
-
+    global contador_ep
     agora = datetime.now().strftime("%H:%M") #pega a hora atual e formata para hora:minutos
 
     if agora == hora_desligar:
+        contador_epsodios(contador_ep)
         os.system("shutdown /s /f /t 3") # desliga o pc. /s para desligar, /f para forcar parada dos aplicativos e /t tempo de 5 segundos 
 
 
@@ -56,6 +57,7 @@ def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
     global hora_desligar
     global quer_desligar
     global var_controle
+    global contador_ep
     global pular_intro, pular_ep, pular_recap
     
     input()
@@ -78,6 +80,8 @@ def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
             
             case "4": #(4) encerrar o programa
                 var_controle = 0
+                contador_epsodios(contador_ep)
+                print("Encerrando o programa...")
 
             case "5": #(5) cancelar a acao
                 print("Ação cancelada. Retornando ao programa...")
@@ -143,6 +147,10 @@ def idioma_usuario(): #* funcao responsavel por perguntar ao usuario o idioma de
     print("Idioma salvo com sucesso!")
     return idioma
 
+def contador_epsodios(contador_ep):
+    with open ('historico.txt', 'a', encoding='utf-8') as arquivo:
+        print(f"Quantidade de Episodios assistidos no dia: {contador_ep}\n", file = arquivo)
+
 #!---------------------------------------------------------------------------- M A I N --------------------------------------------------------------------------------------------------------------------
 
 while True: #* loop para perguntar se desejamos programar o desligamento do pc
@@ -173,15 +181,21 @@ else: # se o arquivo ja existir
             
     print(f"Idioma salvo: {idioma_formatado}")
 
+hoje = datetime.now().strftime("%d/%m/%y")
 
 if not os.path.exists('historico.txt'): #* verifica se o arquivo historico.txt ja existe
     with open ('historico.txt', "w", encoding="utf-8") as arquivo:
         print(f'----------- HISTORICO DE ACOES DO PROGRAMA -----------\n', file=arquivo)
-        print(f'\n----------- {datetime.now().strftime("%d/%m/%y")} -----------\n', file=arquivo)
+        print(f'\n----------- {hoje} -----------\n', file=arquivo)
 
-else: #*caso ja exista
-    with open ('historico.txt', "a", encoding='utf-8') as arquivo:
-        print(f'\n----------- {datetime.now().strftime("%d/%m/%y")} -----------\n', file=arquivo) #registra o dia
+else: #* caso ja exista
+    with open ('historico.txt', 'r', encoding="utf-8") as arquivo: #le o arquivo
+        conteudo = arquivo.read()
+    
+    if f'\n----------- {hoje} -----------\n' not in conteudo: #verifica se a data de hoje ja esta escrita nele
+
+        with open ('historico.txt', "a", encoding='utf-8') as arquivo:
+            print(f'\n----------- {hoje} -----------\n', file=arquivo) #registra o dia
 
 
 pular_intro, pular_ep, pular_recap = obter_caminhos_imagens(idioma) #configura o caminho para as imagens
@@ -190,6 +204,7 @@ pular_intro, pular_ep, pular_recap = obter_caminhos_imagens(idioma) #configura o
 #* declaracao de variaveis globais
 contador = 120 # contador para o primeiro print
 var_controle = 1# variavel responsavel pelo loop principal
+contador_ep = 0# variavel que conta quantos episodios foram pulados
 
 input('Abra a Netflix e pressione "Enter" quando estiver pronto!') #input que espera a confirmacao do usuario para iniciar o programa
 print("Iniciando programa...")
@@ -199,7 +214,7 @@ t.start()
 
 while var_controle != 0: #* loop principal
     
-    if contador == 120: # a cada 120 voltas (10 minutos) no loop o print aparecera na tela
+    if contador == 120: # a cada 120 voltas (10 minutos) no loop o print aparece na tela
         print('Para acessar o menu de configuracoes pressione "Enter".')
         print('Para verificar o historico de todas as acoes do programa acesse a pasta onde esta o arquivo .exe e procure pelo arquivo "historico.txt"')
         contador = 0
@@ -226,7 +241,10 @@ while var_controle != 0: #* loop principal
 
                 with open ('historico.txt', 'a', encoding='utf-8') as arquivo: #registra no arquivo a acao que foi feita juntamente com o horario
                     print(f'{datetime.now().strftime("%H:%M:%S")} - {mensagem}\n', file=arquivo)
-                    
+                
+                if imagem == pular_ep:
+                    contador_ep +=1
+                
         except:
             pass
 
