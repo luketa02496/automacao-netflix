@@ -3,8 +3,14 @@ import os
 import threading
 import pyautogui
 import sys
+from art import text2art
 from pathlib import Path
 from datetime import datetime
+
+def arte_nome():
+    nome = 'MARCELLA EU TE AMO <3'
+    arte = text2art(nome)
+    print(arte)
 
 def programar_desligamento(): #* funcao usada para definir o horario de desligamento do PC
     while True:   
@@ -65,7 +71,7 @@ def menu_configuracoes(): #* funcao que contem o menu de configuracoes do script
         acao = input("Qual ação voce deseja realizar? \n1- Programar ou reprogramar o desligamento. \n2- Cancelar o desligamento. \n3- Para trocar o idioma \n4- Para encerrar o programa \n5- Para cancelar ação. \n-") #pergunta a acao
 
         match acao:
-            case "1": #(1)programar ou reprogramar o desligamente
+            case "1": #(1)programar ou reprogramar o desligamento
                 hora_desligar = programar_desligamento()
                 quer_desligar = "s"
             
@@ -152,6 +158,8 @@ def contador_epsodios(contador_ep):
         print(f"Quantidade de Episodios assistidos no dia: {contador_ep}\n", file = arquivo)
 
 #!---------------------------------------------------------------------------- M A I N --------------------------------------------------------------------------------------------------------------------
+
+arte_nome()
 
 while True: #* loop para perguntar se desejamos programar o desligamento do pc
     quer_desligar = input("Voce deseja programar o PC para desligar? (S/N) \n-").lower() #pergunta se quer desligar o PC e formata para lower case
@@ -254,5 +262,3 @@ while var_controle != 0: #* loop principal
 print("Programa encerrado!")
 
 #! MARCELLA EU TE AMOOOOOOOOOOOOOO MUITOOOOOOOOOOOOOOOOOOOOOOO<3
-
-
