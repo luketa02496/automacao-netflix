@@ -88,7 +88,7 @@ pip install pyinstaller
 No terminal, dentro da pasta do projeto, execute:
 
 ```bash
-pyinstaller --onefile --add-data "imagens;imagens" automatizacao_netflix.py
+pyinstaller --onefile --add-data "imagens;imagens" automacao_netflix.py
 ```
 
 📌 **Explicação:**
